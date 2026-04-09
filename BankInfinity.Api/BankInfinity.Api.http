@@ -1,0 +1,6 @@
+@BankInfinity.Api_HostAddress = http://localhost:5003
+
+GET {{BankInfinity.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
