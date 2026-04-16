@@ -1,6 +1,13 @@
-﻿namespace BankInfinity.Api.Models;
+﻿using System;
 
-public class Transaction
+namespace BankInfinity.Api.Models
 {
-    
+    public class Transaction
+    {
+        public int Id { get; set; }
+        public int AccountId { get; set; } 
+        public decimal Amount { get; set; }
+        public string Category { get; set; }
+        public DateTime Date { get; set; }
+    }
 }

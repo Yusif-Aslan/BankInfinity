@@ -1,44 +1,48 @@
+using BankInfinity.Api.Data;
+using BankInfinity.Api.Services;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Подключаем поддержку контроллеров
+builder.Services.AddControllers();
+
+// ==========================================
+// TODO: ЗАДАНИЕ 7. Подключение базы данных
+// ==========================================
+// EF Core должен знать, какую базу мы используем. 
+// Раскомментируй этот блок, чтобы сказать приложению: "Используй SQLite и создай файл bankinfinity.db".
+
+ builder.Services.AddDbContext<BankDbContext>(options =>
+     options.UseSqlite("Data Source=bankinfinity.db"));
+
+
+// ==========================================
+// TODO: ЗАДАНИЕ 8. Внедрение зависимостей (DI)
+// ==========================================
+// Наш AccountsController требует AccountService в своем конструкторе.
+// Мы должны зарегистрировать сервис, чтобы ASP.NET сам его создавал и передавал.
+// Допиши метод: нужно использовать AddScoped.
+
+// РАСКОММЕНТИРУЙ И ДОПИШИ:
+builder.Services.AddScoped<AccountService>();
+
+
+// Настройки Swagger (красивый интерфейс для тестирования API в браузере)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Включаем Swagger для режима разработки
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Включаем маршрутизацию к нашим контроллерам
+app.MapControllers();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
+// Запускаем сервер!
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
