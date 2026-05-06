@@ -1,19 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BankInfinity.Api.Models;
+﻿using BankInfinity.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace BankInfinity.Api.Data
+namespace BankInfinity.Api.Data;
+
+public class BankDbContext : DbContext
 {
-    public class BankDbContext : DbContext
-    {
-        public BankDbContext(DbContextOptions<BankDbContext> options) : base(options) { }
+    public BankDbContext(DbContextOptions<BankDbContext> options) : base(options) { }
 
-        // Это таблица пользователей
-        public DbSet<User> Users { get; set; }
-        
-        // TODO: ЗАДАНИЕ 3. Добавь DbSet для Account и Transaction, чтобы EF Core создал для них таблицы.
-        // Пример: public DbSet<ИмяКласса> ИмяТаблицы { get; set; }
-        public DbSet<Account> Accounts { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
-        
-    }
+    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<Account> Accounts { get; set; } = null!;
+    public DbSet<Transaction> Transactions { get; set; } = null!;
 }

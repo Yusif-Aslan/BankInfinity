@@ -1,31 +1,50 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using BankInfinity.Api.Services;
+﻿using BankInfinity.Api.DTOs;
+using BankInfinity.Api.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
-namespace BankInfinity.Api.Controllers
+namespace BankInfinity.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AccountsController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AccountsController : ControllerBase
+    private readonly IAccountService _accountService;
+
+    public AccountsController(IAccountService accountService)
     {
-        private readonly AccountService _accountService;
+        _accountService = accountService;
+    }
 
-        public AccountsController(AccountService accountService)
+    [HttpGet("{id}/balance")]
+    public async Task<IActionResult> GetBalance(int id)
+    {
+        try
         {
-            _accountService = accountService;
+            var result = await _accountService.GetBalanceAsync(id);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Data);
+            }
+
+            return BadRequest(result.ErrorMessage);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound("Account not found.");
+        }
+    }
+
+    [HttpPost("transaction")]
+    public async Task<IActionResult> ProcessTransaction([FromBody] TransactionRequest request)
+    {
+        var result = await _accountService.ProcessTransactionAsync(request);
+
+        if (result.IsSuccess)
+        {
+            return Ok(new { NewBalance = result.Data });
         }
 
-        // GET: api/accounts/5/balance
-        [HttpGet("{id}/balance")]
-        public IActionResult GetBalance(int id)
-        {
-  
-            var result = _accountService.GetBalance(id);
-
-            // TODO:  Проверь результат:
-            // Если result.IsSuccess == true, верни Ok(result.Data) (это HTTP 200)
-            // Иначе верни BadRequest(result.ErrorMessage) (это HTTP 400)
-            
-            return BadRequest("Эндпоинт в разработке");
-        }
+        return BadRequest(result.ErrorMessage);
     }
 }

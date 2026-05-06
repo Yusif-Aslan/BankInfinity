@@ -1,10 +1,8 @@
-﻿namespace BankInfinity.Api.Models
+﻿namespace BankInfinity.Api.Models;
+
+public class User : BaseEntity
 {
-    public class User
-    {
-        public int Id { get; set; }
-        public string FullName { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-    }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
 }
