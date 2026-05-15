@@ -15,6 +15,12 @@ public class UserService : IUserService
 
     public async Task<Result<UserResponse>> CreateUserAsync(CreateUserRequest request)
     {
+        var existingUsers = await _userRepository.GetAllAsync();
+        if (existingUsers.Any(u => u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)))
+        {
+            return Result<UserResponse>.Failure("A user with this email address already exists.");
+        }
+
         var user = new User
         {
             FullName = request.FullName,
@@ -25,18 +31,22 @@ public class UserService : IUserService
         await _userRepository.AddAsync(user);
         await _userRepository.SaveChangesAsync();
 
-        return Result<UserResponse>.Success(new UserResponse(user.Id, user.FullName, user.Email));
+        var response = new UserResponse(user.Id, user.FullName, user.Email);
+        
+        return Result<UserResponse>.Success(response);
     }
 
     public async Task<Result<UserResponse>> GetUserAsync(int userId)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
-            
+        var user = (User)await _userRepository.GetByIdAsync(userId);
+        
         if (user == null)
         {
             return Result<UserResponse>.Failure("User not found.");
         }
 
-        return Result<UserResponse>.Success(new UserResponse(user.Id, user.FullName, user.Email));
+        var response = new UserResponse(user.Id, user.FullName, user.Email);
+        
+        return Result<UserResponse>.Success(response);
     }
 }

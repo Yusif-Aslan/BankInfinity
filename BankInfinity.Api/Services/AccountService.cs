@@ -80,6 +80,79 @@ public class AccountService : IAccountService
         return true;
     }
 
+    public async Task<Result<bool>> TransferAsync(TransferRequest request)
+    {
+        if (request.Amount <= 0)
+        {
+            return Result<bool>.Failure("Transfer amount must be greater than zero.");
+        }
+
+        if (request.SenderAccountId == request.ReceiverAccountId)
+        {
+            return Result<bool>.Failure("Cannot transfer funds to the same account.");
+        }
+
+        var sender = (Account)await _accountRepository.GetByIdAsync(request.SenderAccountId);
+        var receiver = (Account)await _accountRepository.GetByIdAsync(request.ReceiverAccountId);
+
+        if (sender == null || receiver == null)
+        {
+            return Result<bool>.Failure("One or both accounts not found.");
+        }
+
+        if (sender.Balance < request.Amount)
+        {
+            return Result<bool>.Failure("Insufficient funds on the sender's account.");
+        }
+        
+        sender.Balance -= request.Amount;
+        var senderTransaction = new Transaction
+        {
+            AccountId = sender.Id, 
+            Amount = -request.Amount,
+            Category = "Transfer (Debit)",
+            Date = DateTime.UtcNow
+        };
+        
+        receiver.Balance += request.Amount;
+        var receiverTransaction = new Transaction
+        {
+            AccountId = receiver.Id,
+            Amount = request.Amount,
+            Category = "Transfer (Credit)",
+            Date = DateTime.UtcNow
+        };
+        
+        await _transactionRepository.AddAsync(senderTransaction);
+        await _transactionRepository.AddAsync(receiverTransaction);
+        await _accountRepository.UpdateAsync(sender);
+        await _accountRepository.UpdateAsync(receiver);
+
+      
+        await _accountRepository.SaveChangesAsync();
+
+        return Result<bool>.Success(true);
+    }
+    
+    public async Task<Result<IEnumerable<TransactionResponse>>> GetTransactionsAsync(int accountId)
+    {
+        var account = await _accountRepository.GetByIdAsync(accountId);
+        if (account == null)
+        {
+            return Result<IEnumerable<TransactionResponse>>.Failure("Account not found.");
+        }
+        
+        var allTransactions = await _transactionRepository.GetAllAsync(); 
+        
+        var transactionHistory = allTransactions
+            .Where(t => t.AccountId == accountId)
+            .OrderByDescending(t => t.Date)
+            .Select(t => new TransactionResponse(t.Id, t.Amount, t.Category, t.Date))
+            .ToList();
+
+        return Result<IEnumerable<TransactionResponse>>.Success(transactionHistory);
+    }
+    
     private void ApplyCommission(ref decimal amount)
     {
         if (amount < 0)

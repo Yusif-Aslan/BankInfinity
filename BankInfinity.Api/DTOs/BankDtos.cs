@@ -5,3 +5,6 @@ public record TransactionRequest(int AccountId, decimal Amount, string Category)
 public record AccountBalanceResponse(string AccountNumber, decimal Balance);
 public record CreateUserRequest(string FullName, string Email, string PhoneNumber);
 public record UserResponse(int Id, string FullName, string Email);
+
+public record TransferRequest(int SenderAccountId, int ReceiverAccountId, decimal Amount);
+public record TransactionResponse(int Id, decimal Amount, string Category, DateTime Date);
