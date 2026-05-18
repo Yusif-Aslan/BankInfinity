@@ -14,5 +14,9 @@ public class CreateUserValidator : AbstractValidator<CreateUserRequest>
         RuleFor(user => user.FullName)
             .NotEmpty().WithMessage("Full name is required.")
             .MinimumLength(3).WithMessage("Full name must be at least 3 characters long.");
+        
+        RuleFor(user => user.Password)
+            .NotEmpty().WithMessage("Password is required.")
+            .MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
     }
 }

@@ -35,20 +35,30 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
-        // 1. Manual Validation
         var validationResult = await _createUserValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
             return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
         }
 
-        // 2. Business Logic
+ 
         var result = await _userService.CreateUserAsync(request);
         
         if (result.IsSuccess)
         {
-            // Returns a 201 Created status code and a Location header pointing to the new resource
             return CreatedAtAction(nameof(GetUser), new { id = result.Data.Id }, result.Data);
+        }
+
+        return BadRequest(result.ErrorMessage);
+    }
+    [HttpPost("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+    {
+        var result = await _userService.VerifyEmailAsync(request);
+
+        if (result.IsSuccess)
+        {
+            return Ok(new { Message = "Email verified successfully. Account is ready for the next step." });
         }
 
         return BadRequest(result.ErrorMessage);

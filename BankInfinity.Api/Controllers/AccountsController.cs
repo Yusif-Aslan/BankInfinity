@@ -2,9 +2,11 @@
 using BankInfinity.Api.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BankInfinity.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AccountsController : ControllerBase
@@ -54,14 +56,12 @@ public class AccountsController : ControllerBase
     [HttpPost("transaction")]
     public async Task<IActionResult> ProcessTransaction([FromBody] TransactionRequest request)
     {
-        // 1. Manual Validation
         var validationResult = await _transactionValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
             return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
         }
-
-        // 2. Business Logic
+        
         var result = await _accountService.ProcessTransactionAsync(request);
         if (result.IsSuccess) return Ok(new { NewBalance = result.Data });
         
@@ -71,14 +71,13 @@ public class AccountsController : ControllerBase
     [HttpPost("transfer")]
     public async Task<IActionResult> Transfer([FromBody] TransferRequest request)
     {
-        // 1. Manual Validation
         var validationResult = await _transferValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
             return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
         }
 
-        // 2. Business Logic
+        
         var result = await _accountService.TransferAsync(request);
         if (result.IsSuccess) return Ok(new { Message = "Transfer completed successfully." });
         
